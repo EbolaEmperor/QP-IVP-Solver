@@ -1,57 +1,17 @@
-# 数值积分求解器
+# 四精度浮点数IVP求解器
 
-请确保您已经安装`gnuplot`，若没有安装，请通过命令：
-
-```bash
-    sudo apt install gnuplot-qt
-```
-
-来完成安装。然后您可以运行命令：
+编译：
 
 ```bash
-    make story
+make solve
 ```
 
-将会开始自动生成图片与报告（约需三分钟，含求解器的使用方法），但不会复现报告中的数值测试。若您想验证报告中数值测试的正确性，请运行：
+运行：
 
 ```bash
-    make run
+./solve 文件名
 ```
 
-它将会复现所有的测试。您可以通过命令
+## 说明
 
-```bash
-    make clean
-```
-
-来清除所有生成的文件（但求解器与报告将被保留）
-
-# 热方程与平流方程
-
-在项目根目录运行
-
-```bash
-make heat
-```
-
-来编译热方程求解器。它会在MOL文件夹中生成一个heat，使用
-
-```bash
-./heat xxx.json
-```
-
-来运行。其中`xxx.json`是输入文件名，可参考样例`MOL/samples/heat.json`。
-
-在项目根目录运行
-
-```bash
-make advection
-```
-
-来编译平流方程求解器。它会在MOL文件夹中生成一个advection，使用
-
-```bash
-./advection xxx.json
-```
-
-来运行。其中`xxx.json`是输入文件名，可参考样例`MOL/samples/advection.json`。
+由于jsoncpp并不原生支持四精度浮点数，因此您的json文件会被默认以double的精度读取，若您需要高精度的初值，请将您的数值打上双引号，这样我们会读取字符串并转化为四精度浮点数。

@@ -1,0 +1,12 @@
+{
+    "Problem": "Double Pendulum Problem",
+    "Method": "Dormand-Prince 8(7)",
+    "Mass Ratio": 0.6,
+    "Init": [0.6, -1.0, 0.0, 0.0],
+    "T": 12.582604742222023,
+    "eps": 1e-10,
+    "Richardson Error Estimate": false,
+    "Output": true,
+    "Dense Output": false,
+    "Dense-Discrete Output": true
+}

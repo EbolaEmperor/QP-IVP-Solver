@@ -8,6 +8,9 @@
 #include "VanDerPolFunc.h"
 #include "Hamiltonian.h"
 #include "AliContest.h"
+#include "MultiBodyInOneStar.h"
+#include "nBody.h"
+#include "DoublePendulum.h"
 #include "json.h"
 using namespace std;
 
