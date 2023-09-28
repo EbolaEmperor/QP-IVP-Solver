@@ -155,7 +155,7 @@ void registerEmbeddedESDIRK(){
 }
 
 EmbeddedESDIRKSolver::EmbeddedESDIRKSolver(const int &p){
-    if(p < 4 || p > 5){
+    if(p < 4 || p > 6){
         std::cerr << "The order of an Embedded ESDIRK method could only be 4 or 5." << std::endl;
         exit(-1);
     }
@@ -180,7 +180,7 @@ EmbeddedESDIRKSolver::EmbeddedESDIRKSolver(const int &p){
         b2 = ColVector(7, b2val);
         c = ColVector(7, cval);
         maxorder = 4;
-    } else {
+    } else if(p==5) {
         static const Real aval[]={
             0,                              0,                          0,                       0,                                                 0,                          0,                                    0,                              0,
             1.0Q/7.0Q,                     1.0Q/7.0Q,                       0,                       0,                                                 0,                          0,                                    0,                              0,
@@ -202,6 +202,30 @@ EmbeddedESDIRKSolver::EmbeddedESDIRKSolver(const int &p){
         b2 = ColVector(8, b2val);
         c = ColVector(8, cval);
         maxorder = 5;
+    } else {
+        static const Real gma = 2.0Q/9.0Q;
+        static const Real aval[]={
+            0,                              0,                          0,                       0,                                                 0,                          0,                                    0,                              0, 0,
+            gma,                            gma,                       0,                       0,                                                 0,                          0,                                    0,                              0, 0,
+            1.0Q/9.0Q,                      -52295652026801.0Q/1014133226193379.0Q,  gma,         0,                                                 0,                          0,                                    0,                              0, 0,
+            37633260247889.0Q/456511413219805.0Q,  -162541608159785.0Q/642690962402252.0Q,  186915148640310.0Q/408032288622937.0Q,          gma,                0,                          0,                                    0,                              0, 0,
+            -37161579357179.0Q/532208945751958.0Q,  -211140841282847.0Q/266150973773621.0Q,  884359688045285.0Q/894827558443789.0Q,    845261567597837.0Q/1489150009616527.0Q,    gma,            0,                                    0,                              0, 0,
+            32386175866773.0Q/281337331200713.0Q,  498042629717897.0Q/1553069719539220.0Q,  -73718535152787.0Q/262520491717733.0Q,     -147656452213061.0Q/931530156064788.0Q,       -16605385309793.0Q/2106054502776008.0Q,     gma,              0,                              0, 0,
+            -38317091100349.0Q/1495803980405525.0Q,  233542892858682.0Q/880478953581929.0Q,  -281992829959331.0Q/709729395317651.0Q,  -52133614094227.0Q/895217507304839.0Q,  -9321507955616.0Q/673810579175161.0Q,  79481371174259.0Q/817241804646218.0Q,       gma,              0, 0,
+            -486324380411713.0Q/1453057025607868.0Q,  -1085539098090580.0Q/1176943702490991.0Q,  370161554881539.0Q/461122320759884.0Q,  804017943088158.0Q/886363045286999.0Q,  -15204170533868.0Q/934878849212545.0Q,  -248215443403879.0Q/815097869999138.0Q,  339987959782520.0Q/552150039467091.0Q,       gma, 0,
+            0, 0, 0, 281246836687281.0Q/672805784366875.0Q, 250674029546725.0Q/464056298040646.0Q, 88917245119922.0Q/798581755375683.0Q, 127306093275639.0Q/658941305589808.0Q, -319515475352107.0Q/658842144391777.0Q, gma
+        };
+        static const Real b2val[] = {
+            -204006714482445.0Q/253120897457864.0Q,     0.0Q,     -818062434310719.0Q/743038324242217.0Q,  3176520686137389.0Q/1064235527052079.0Q,      -574817982095666.0Q/1374329821545869.0Q,        -507643245828272.0Q/1001056758847831.0Q,     2013538191006793.0Q/972919262949000.0Q,      352681731710820.0Q/726444701718347.0Q,      -12107714797721.0Q/746708658438760.0Q
+        };
+        static const Real cval[] = {
+            0,      2.0Q*gma,        376327483029687.0Q/1335600577485745.0Q,     433625707911282.0Q/850513180247701.0Q,      183.0Q/200.0Q,      62409086037595.0Q/296036819031271.0Q,       81796628710131.0Q/911762868125288.0Q,     0.97Q,      1.0Q
+        };
+        A = Matrix(9, 9, aval);
+        b1 = ColVector(9, aval+72);
+        b2 = ColVector(9, b2val);
+        c = ColVector(9, cval);
+        maxorder = 6;
     }
 }
 
@@ -227,7 +251,7 @@ std::pair<ColVector, ColVector> EmbeddedESDIRKSolver::oneStepSolve(TimeFunction 
             continue;
         }
 
-        static const int MaxIter = 50;
+        static const int MaxIter = 100;
         ColVector curY, nxtY = U0 + step * c(i) * y[0];
         int T = 0;
         do{
@@ -238,7 +262,7 @@ std::pair<ColVector, ColVector> EmbeddedESDIRKSolver::oneStepSolve(TimeFunction 
                 T = MaxIter;
                 break;
             }
-        }while(relativeError(curY, nxtY) > 1e-14);
+        }while(relativeError(curY, nxtY) > 1e-30Q);
         
         if(T < MaxIter){
             y.push_back(nxtY);
@@ -345,6 +369,7 @@ void AdaptiveRKSolver::solve(TimeFunction &f, const ColVector &x0, const Real &T
     while(curtime < T){
         if(curtime + step >= T) step = T - curtime;
         std::pair<ColVector, ColVector> pU = oneStepSolve(f, sol[gridsize], curtime, step);
+        // std::cerr << (pU.first-pU.second).T() << " " << step << " " << curtime << std::endl;
         Real Eind = 0.0Q;
         for(int i = 0; i < pU.first.size(); i++){
             Eind += sqr( (pU.first(i) - pU.second(i)) / ( eps + fabsq(sol[gridsize](i)) * eps ) );
@@ -547,7 +572,7 @@ std::vector<ColVector> CollocationRKSolver_OneStepY::oneStepSolveY(TimeFunction 
     for(int i = 1; i < s; i++)
         y.push_back(y[0]);
     int T = 0;
-    static const int MaxIter = 50;
+    static const int MaxIter = 100;
     while(!f.isLinear() && ++T < MaxIter){
         Real maxerr = 0;
         for(int i = 0; i < s; i++){
@@ -562,7 +587,7 @@ std::vector<ColVector> CollocationRKSolver_OneStepY::oneStepSolveY(TimeFunction 
                 break;
             }
         }
-        if(maxerr < 1e-14) break;
+        if(maxerr < 1e-30Q) break;
     }
     if(f.isLinear() || T == MaxIter){
         // 通常情况下，不动点迭代是收敛的，如果不收敛，则需调用非线性方程组求解器
