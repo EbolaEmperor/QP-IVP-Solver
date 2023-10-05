@@ -43,3 +43,5 @@ make solve
 2. P.J. Prince and J.R. Dormand. “High order embedded Runge-Kutta formulae”. In: Journal of Computational and
 Applied Mathematics 7.1 (1981), pp. 67–75. ISSN: 0377-0427. DOI: https://doi.org/10.1016/0771-050X(81)
 90010-3.
+
+3. G. Sun, Construction of high order symplectic Runge-Kutta Methods, J. Comput. Math. 11 (1993) 250-260.
