@@ -118,7 +118,7 @@ ColVector ESDIRKSolver::oneStepSolve(TimeFunction &f, const ColVector &U0, const
                 T = MaxIter;
                 break;
             }
-        }while(relativeError(curY, nxtY) > 1e-14);
+        }while(relativeError(curY, nxtY) > 1e-30Q);
         
         if(T < MaxIter){
             y.push_back(nxtY);

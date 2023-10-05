@@ -13,8 +13,8 @@ Matrix Function::jacobi(const ColVector &x) const{
     for(int j = 0; j < n; j++){
         ColVector d(n);
         //double scale = max(1.0, min( std::max((*this)(x).maxnorm(), x.maxnorm())*10, 1e7));
-        d(j) = 3e-6; // 1e-14 * scale;
-        ColVector g1 = (*this)(x+d) / 6e-6Q - (*this)(x-d) / 6e-6Q;
+        d(j) = 3e-20Q; // 1e-14 * scale;
+        ColVector g1 = (*this)(x+d) / 6e-20Q - (*this)(x-d) / 6e-20Q;
         h.setSubmatrix(0,j,g1);
     }
     return h;
@@ -32,7 +32,7 @@ ColVector Function::gradval(const ColVector &x) const{
 //------------------------Non-Linear Solver (Newton Method)------------------------------------
 
 ColVector NonLinearSolver::solve(Function &F, ColVector current){
-    return solve(F, current, 1e-15);
+    return solve(F, current, 1e-30Q);
 }
 
 ColVector NonLinearSolver::solve(Function &F, ColVector current, const Real &err){
