@@ -64,6 +64,13 @@ public:
 static void registerRadauIIA(void)__attribute__((constructor));
 
 
+class SympleticRadauSolver : public ConstStepCollocationRKSolver{
+public:
+    SympleticRadauSolver();
+};
+static void registerSympleticRadau(void)__attribute__((constructor));
+
+
 class AdaptiveRKSolver : public TimeIntegrator_VariativeStep{
 protected:
     Matrix A;
@@ -143,5 +150,12 @@ public:
     AdaptiveRadauIIARKSolver(const int &stage);
 };
 static void registerAdaptiveRadauIIA(void)__attribute__((constructor));
+
+
+class AdaptiveSympleticRadauSolver : public AdaptiveCollocationRKSolver{
+public:
+    AdaptiveSympleticRadauSolver();
+};
+static void registerAdaptiveSympleticRadau(void)__attribute__((constructor));
 
 #endif

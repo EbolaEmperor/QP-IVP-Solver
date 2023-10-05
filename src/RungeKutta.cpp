@@ -337,6 +337,33 @@ RadauIIARKSolver::RadauIIARKSolver(const int &s){
     maxorder = 2*s-1;
 }
 
+//--------------------------------------Sympletic Radau RK Method----------------------------------------
+
+void registerSympleticRadau(){
+    auto& factory = TimeIntegratorFactory::Instance();
+    factory.registerTimeIntegrator("Sympletic Radau", [](int p){ return (TimeIntegrator*) new SympleticRadauSolver(); });
+}
+
+SympleticRadauSolver::SympleticRadauSolver(){
+    const Real sq6 = sqrtq(6.0Q);
+    const Real aval[] = {
+        (16.0Q-sq6)/72.0Q,              (328.0Q-167.0Q*sq6)/1800.0Q,    (-2.0Q+3.0Q*sq6)/450.0Q,
+        (328.0Q+167.0Q*sq6)/1800.0Q,    (16.0Q+sq6)/72.0Q,              (-2.0Q-3.0Q*sq6)/450.0Q,
+        (85.0Q-10.0Q*sq6)/180.0Q,       (85.0Q+10.0Q*sq6)/180.0Q,       1.0Q/18.0Q
+    };
+    const Real bval[] = {
+        (16.0Q-sq6)/36.0Q,  (16.0Q+sq6)/36.0Q,  1.0Q/9.0Q
+    };
+    const Real cval[] = {
+        (4.0Q-sq6)/10.0Q,   (4.0Q+sq6)/10.0Q,   1.0Q
+    };
+
+    A = Matrix(3,3,aval);
+    b = ColVector(3,bval);
+    c = ColVector(3,cval);
+    maxorder = 5;
+}
+
 //-------------------------Some Generic Functions for Adaptive RK Methods------------------------------
 
 std::pair<ColVector, ColVector> EmbeddedRKSolver::oneStepSolve(TimeFunction &f, const ColVector &U0, const Real &t0, const Real &step){
@@ -514,6 +541,19 @@ void registerAdaptiveRadauIIA(){
 AdaptiveRadauIIARKSolver::AdaptiveRadauIIARKSolver(const int &s){
     maxorder = 2*s - 1;
     CollocationRKSolver *p = new RadauIIARKSolver(s);
+    computeCoef(p);
+}
+
+//-------------------------------------Adaptive Sympletic Radau RK Method--------------------------------------------
+
+void registerAdaptiveSympleticRadau(){
+    auto& factory = TimeIntegratorFactory::Instance();
+    factory.registerTimeIntegrator("Adaptive Sympletic Radau", [](int p){ return (TimeIntegrator*) new AdaptiveSympleticRadauSolver(); });
+}
+
+AdaptiveSympleticRadauSolver::AdaptiveSympleticRadauSolver(){
+    maxorder = 5;
+    CollocationRKSolver *p = new SympleticRadauSolver();
     computeCoef(p);
 }
 
