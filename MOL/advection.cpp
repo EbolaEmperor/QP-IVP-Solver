@@ -3,7 +3,7 @@
 #include "json.h"
 using namespace std;
 
-double mu;
+Real mu;
 
 ColVector FTCS(const ColVector &U0){
     int m = U0.size();
@@ -95,12 +95,12 @@ void registerMethods(){
 }
 
 // Initial condition
-double f0(const double &x){
-    return exp(-20*sqr(x-2)) + exp(-sqr(x-5));
+Real f0(const Real &x){
+    return expq(-20*sqr(x-2)) + expq(-sqr(x-5));
 }
 
-vector<ColVector> solveAdvection(const string &method, const double &l, const double &r, const double &h, const double &T, const double &k){
-    int m = (int)round((r-l)/h);
+vector<ColVector> solveAdvection(const string &method, const Real &l, const Real &r, const Real &h, const Real &T, const Real &k){
+    int m = (int)roundq((r-l)/h);
     ColVector U(m+1);
     vector<ColVector> sol;
     sol.push_back(U);
@@ -113,7 +113,7 @@ vector<ColVector> solveAdvection(const string &method, const double &l, const do
     }
     mu = k / h; // We fix a=1
     auto fun = oneStepMethods[method];
-    for(double t = 0; t < T - 1e-6; t += k){
+    for(Real t = 0; t < T - 1e-16; t += k){
         U = fun(U);
         sol.push_back(U);
     }
@@ -149,7 +149,7 @@ int main(int argc, char* argv[]){
     cout << "Solved." << endl;
 
     ofstream fout("result.txt");
-    double k = problem["Time Step"].asDouble();
+    Real k = problem["Time Step"].asDouble();
     int skip = problem.isMember("Output Skip") ? problem["Output Skip"].asInt() : 1;
     for(int i = 0; i < res.size(); i += skip){
         fout << i*k << " ";

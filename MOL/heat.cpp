@@ -3,16 +3,16 @@
 #include "json.h"
 using namespace std;
 
-const double PI = acos(-1);
+const Real PI = acosq(-1);
 
 class HeatEquation : public TimeFunction{
 private:
-    double h;
+    Real h;
     // 在这里设置边值条件
-    double b0(const double &t) const{
+    Real b0(const Real &t) const{
         return 0.0;
     }
-    double b1(const double &t) const{
+    Real b1(const Real &t) const{
         return 0.0;
     }
 public:
@@ -20,7 +20,7 @@ public:
         __isLinear = true;
         h = 1.0 / n;
     }
-    ColVector operator () (const ColVector &U, const double &t) const{
+    ColVector operator () (const ColVector &U, const Real &t) const{
         ColVector U1(U.size());
         for(int i = 0; i < U.size(); i++){
             U1(i) = -2*U(i)/(h*h);
@@ -31,7 +31,7 @@ public:
         }
         return U1;
     }
-    ColVector solve(const Matrix &a, const ColVector &c, const ColVector &U0, const double &t0, const double &k) const {
+    ColVector solve(const Matrix &a, const ColVector &c, const ColVector &U0, const Real &t0, const Real &k) const {
         int s = c.size(), m = U0.size();
         ColVector rhs(s*m);
         for(int i = 0; i < s; i++)
@@ -50,7 +50,7 @@ public:
 };
 
 // 在这里设置初值条件
-double g0(const double &x){
+Real g0(const Real &x){
     if(0.45 <= x && x < 0.5) return 20*(x-0.45);
     else if(0.5 <= x && x < 0.55) return -20*(x-0.55);
     else return 0;
@@ -60,38 +60,38 @@ double g0(const double &x){
 class FourierSolver{
 private:
     int maxn;
-    vector<double> A;
+    vector<Real> A;
 
-    double F(const double &x) const{
-        return 2 * initial(x) * sin(maxn*PI*x);
+    Real F(const Real &x) const{
+        return 2 * initial(x) * sinq(maxn*PI*x);
     }
 
-    double squareIntegrate(const double &l, const double &r) const{
-        double mid = (l + r) / 2;
+    Real squareIntegrate(const Real &l, const Real &r) const{
+        Real mid = (l + r) / 2;
         return (F(l) + 4*F(mid) + F(r)) * (r - l) / 6;
     }
 
     // Simpson自适应积分
-    double integrate(const double &l, const double &r, const double &V, const double &eps) const{
-        double mid = (l + r) / 2;
-        double L = squareIntegrate(l,mid);
-        double R = squareIntegrate(mid,r);
-        if(fabs(L+R-V) <= 15*eps) return L + R + (L+R-V) / 15.0;
+    Real integrate(const Real &l, const Real &r, const Real &V, const Real &eps) const{
+        Real mid = (l + r) / 2;
+        Real L = squareIntegrate(l,mid);
+        Real R = squareIntegrate(mid,r);
+        if(fabsq(L+R-V) <= 15*eps) return L + R + (L+R-V) / 15.0;
         return integrate(l,mid,L,eps) + integrate(mid,r,R,eps);
     }
 
-    double integrate(const double &l, const double &r, const double &eps) const{
+    Real integrate(const Real &l, const Real &r, const Real &eps) const{
         // 将积分区间随机划分为9个小区间，防止出现因为5个等分点为0导致整个积分返回0的情况
         int points[10], m;
         for(int i = 1; i < 9; i++) points[i] = rand();
         points[0] = 0; points[9] = RAND_MAX;
         sort(points, points+10);
         m = unique(points, points+10) - points;
-        double sum = 0;
+        Real sum = 0;
         for(int i = 0; i < m-1; i++){
-            double hl = l + (double)points[i]/RAND_MAX * (r-l);
-            double hr = l + (double)points[i+1]/RAND_MAX * (r-l);
-            sum += integrate(hl, hr, squareIntegrate(hl,hr), max(1e-4*eps, 1e-15));
+            Real hl = l + (Real)points[i]/RAND_MAX * (r-l);
+            Real hr = l + (Real)points[i+1]/RAND_MAX * (r-l);
+            sum += integrate(hl, hr, squareIntegrate(hl,hr), max(1e-4Q*eps, 1e-30Q));
         }
         return sum;
     }
@@ -108,23 +108,23 @@ public:
         cout << maxn << " terms has been retained in the Fourier series." << endl;
     }
 
-    double initial(const double &x) const{
+    Real initial(const Real &x) const{
         return g0(x);
     }
 
-    double operator () (const double &x, const double &t) const{
-        double sum = 0;
+    Real operator () (const Real &x, const Real &t) const{
+        Real sum = 0;
         for(int k = 1; k <= maxn; k++){
-            sum += A[k-1] * exp(-k*k*PI*PI*t) * sin(k*PI*x);
+            sum += A[k-1] * expq(-k*k*PI*PI*t) * sinq(k*PI*x);
         }
         return sum;
     }
 
-    void output(const string &fname, const double &T, const double &h){
+    void output(const string &fname, const Real &T, const Real &h){
         cout << "--------------------------------------------------------------------------------" << endl;
         ofstream fout(fname);
         fout << setprecision(12) << T << " ";
-        for(double x = h; x <= 1-h+1e-14; x += h){
+        for(Real x = h; x <= 1-h+1e-29Q; x += h){
             fout << (*this)(x, T) << " ";
         }
         fout << endl;
@@ -132,17 +132,17 @@ public:
         cout << "Output: Results has been saved to " << fname << endl;
     }
 
-    void denseDiscreteOutput(const string &fname, const double &step, const double &T, const double &h){
+    void denseDiscreteOutput(const string &fname, const Real &step, const Real &T, const Real &h){
         cout << "--------------------------------------------------------------------------------" << endl;
         ofstream fout(fname);
         fout << setprecision(12);
-        for(double x = 0; x <= 1+1e-14; x += h){
+        for(Real x = 0; x <= 1+1e-29Q; x += h){
             fout << initial(x) << " ";
         }
         fout << endl;
-        for(double t = step; t <= T+1e-14; t += step){
+        for(Real t = step; t <= T+1e-29Q; t += step){
             fout << t << " ";
-            for(double x = h; x <= 1-h+1e-14; x += h){
+            for(Real x = h; x <= 1-h+1e-29Q; x += h){
                 fout << (*this)(x, T) << " ";
             }
             fout << endl;
@@ -171,8 +171,8 @@ int main(int argc, char* argv[]){
     }
 
     int n = problem["Space Section"].asInt();
-    double h = 1.0 / n;
-    double T = problem["End Time"].asDouble();
+    Real h = 1.0 / n;
+    Real T = problem["End Time"].asDouble();
 
     if(problem["Method"].asString() == "Fourier"){
         FourierSolver solver(problem["Fourier Terms"].asInt());
@@ -195,7 +195,7 @@ int main(int argc, char* argv[]){
     } else {
         if(problem.isMember("Max Step"))
             solver->setMaxStep(problem["Max Step"].asDouble());
-        solver->solveWithInfo(f, U0, T, problem["Tolerance"].asDouble());
+        solver->solveWithInfo(f, U0, T, (Real)problem["Tolerance"].asDouble());
     }
     
     if(problem["Output"].asBool())
