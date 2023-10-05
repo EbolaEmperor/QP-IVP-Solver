@@ -21,15 +21,17 @@ make solve
 | 名称 | 计算类型 | 步长类型 | 支持的阶数 |
 | :-: | :-: | :-: | :-: |
 | Classical RK | 显式 | 固定 | 4 |
-| ESDIRK | 隐式 | 固定 | 4(3) | 4 |
+| ESDIRK | 隐式 | 固定 | 4 |
 | Gauss-Legendre | 隐式 | 固定 | 2s |
 |Radau-IIA | 隐式 | 固定 | 2s-1 |
+|Sympletic Radau | 隐式 | 固定 | 5 |
 |Fehlberg | 隐式 | 自适应 | 4(5) |
 |Dormand-Prince | 显式 | 自适应 | 5(4) |
 |Dormand-Prince 8(7) | 显式 | 自适应 | 8(7) |
-|Adaptive ESDIRK | 隐式 | 自适应 | 4 |
-|Adaptive Gauss-Legendre | 隐式 | 自适应 | 2s |
-|Adaptive Radau-IIA | 隐式 | 自适应 | 2s-1 |
+|Adaptive ESDIRK | 隐式 | 自适应 | 5 |
+|Adaptive Gauss-Legendre | 隐式 | 自适应 | 2s+1 |
+|Adaptive Radau-IIA | 隐式 | 自适应 | 2s |
+|Adaptive Sympletic Radau | 隐式 | 自适应 | 6 |
 |Embedded ESDIRK | 隐式 | 自适应 | 4(3), 5(4), 6(5) |
 
 带括号的阶数，括号内数字表示其 embedded 的方法的阶数。
